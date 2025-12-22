@@ -8,6 +8,6 @@ app = FastAPI()
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     while True:
-        data = await websocket.receive_text()
-        print(data)
-        await websocket.send_text(f'I heard you: {data}')
+        data = await websocket.receive_bytes()
+        print("Received audio chunk", flush=True)
+        await websocket.send_text("Ack")

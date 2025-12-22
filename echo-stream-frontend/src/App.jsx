@@ -10,6 +10,10 @@ function App() {
 
   const [isRecording, setIsRecording] = useState(false);
   const mediaRecorderRef = useRef(null); 
+
+  const socketRef = useRef(null);
+
+
   async function startMicrophone() {
     try{
 
@@ -17,22 +21,32 @@ function App() {
       console.log(stream);
 
       setIsRecording(true);
-      
+
+      const recorder = new MediaRecorder(stream);
+
+      mediaRecorderRef.current = recorder
+      recorder.ondataavailable = async (event) => {
+        if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+          socketRef.current.send(event.data);
+        } else {
+          // Add this part to catch errors!
+          console.error("Socket not open! State:", socketRef.current ? socketRef.current.readyState : "Null");
+        }
+        console.log("Audio chunk", event.data.size);
+      }
 
 
-    }
-
-
-    catch (err) {
+      recorder.start(500);
+    } catch (err) {
       console.error("Error accessing mic:", err);
     }
   }
-  
   function handleConnect() {
     const socket = new WebSocket('ws://127.0.0.1:8000/ws');
+    socketRef.current = socket;
     socket.onopen = () => {
       console.log('Connected to server')
-      socket.send('Hello Python')
+      // socket.send('Hello Python')
     }
 
     socket.onmessage = (event) => {
