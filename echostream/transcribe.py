@@ -1,7 +1,11 @@
 from fastapi import FastAPI, WebSocket
 
+from echostream import manager
+
 
 app = FastAPI()
+
+manager = manager.ConnectionManager()
 
 
 @app.websocket("/ws")
